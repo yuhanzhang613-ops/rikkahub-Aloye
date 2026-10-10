@@ -34,4 +34,6 @@ data class ConversationEntity(
     val folderId: String = "",
     @ColumnInfo("config", defaultValue = "")
     val config: String = "",
+    @ColumnInfo("nsfw_mode_enabled", defaultValue = "0")
+    val nsfwModeEnabled: Boolean = false,
 )
