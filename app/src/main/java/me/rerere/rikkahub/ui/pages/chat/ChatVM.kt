@@ -389,4 +389,18 @@ class ChatVM(
         }
     }
 
+    /**
+     * 切换 NSFW 模式
+     * 
+     * 当用户打开 NSFW 开关时：
+     * 1. 更新数据库中的 nsfwModeEnabled 字段为 true
+     * 2. 在下一次发送消息时，ChatService 会自动注入隐藏对话到数据库
+     * 3. 注入后，这些对话成为历史消息，后续正常对话
+     */
+    fun toggleNsfwMode() {
+        viewModelScope.launch {
+            chatService.toggleConversationNsfwMode(_conversationId)
+        }
+    }
+
 }
