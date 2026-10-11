@@ -25,5 +25,6 @@ object NsfwPrompts {
     val ALL_INJECTION_MESSAGES: List<Message>
         get() = NsfwPromptsPart1.messages + 
                 NsfwPromptsPart2.messages + 
-                NsfwPromptsPart3.messages
+                NsfwPromptsPart3.messages +
+                NsfwPromptsPart4.messages
 }
