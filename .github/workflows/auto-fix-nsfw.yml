@@ -1,0 +1,31 @@
+name: Auto Fix NSFW Compilation Error
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Fix TopBar vm parameter
+        run: |
+          FILE="app/src/main/java/me/rerere/rikkahub/ui/pages/chat/ChatPage.kt"
+          
+          # 在 previewMode = isPreviewMode, 后面添加 vm = vm,
+          # 使用 perl 进行多行匹配和替换
+          perl -i -pe 's/(previewMode = isPreviewMode,)\n(\s+onClickMenu)/$1\n                    vm = vm,\n$2/g' "$FILE"
+          
+          # 检查是否修改成功
+          if grep -q "vm = vm," "$FILE"; then
+            echo "✅ 修复成功！已添加 vm = vm, 参数"
+            git config user.name "GitHub Actions Bot"
+            git config user.email "actions@github.com"
+            git add "$FILE"
+            git commit -m "fix(NSFW): Auto-fix TopBar vm parameter"
+            git push
+          else
+            echo "❌ 修复失败，文件格式可能与预期不符"
+            exit 1
+          fi
