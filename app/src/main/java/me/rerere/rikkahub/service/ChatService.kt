@@ -1555,26 +1555,10 @@ class ChatService(
         // 1. 更新数据库标志
         conversationRepo.toggleConversationNsfwMode(conversationId)
         
-        // 2. 如果是开启 NSFW 模式，注入预设对话
+        // 2. 如果是开启 NSFW 模式，只更新标志
+        // NsfwInjector 会在发送 API 请求时自动注入隐藏对话
         if (newNsfwState) {
-            // 使用 NsfwPrompts 中定义的完整 14 轮对话
-            val nsfwDialogue = me.rerere.rikkahub.data.nsfw.NsfwPrompts.ALL_INJECTION_MESSAGES.map { msg ->
-                if (msg.role == "user") {
-                    UIMessage.user(msg.content)
-                } else {
-                    UIMessage.assistant(msg.content)
-                }
-            }
-            
-            // 注入对话到消息节点列表（放在最前面作为历史上下文）
-            val nsfwNodes = nsfwDialogue.map { it.toMessageNode() }
-            val updatedConversation = conversation.copy(
-                messageNodes = nsfwNodes + conversation.messageNodes,
-                nsfwModeEnabled = true
-            )
-            
-            // 保存到数据库和内存
-            saveConversation(conversationId, updatedConversation)
+            updateConversationState(conversationId) { it.copy(nsfwModeEnabled = true) }
         } else {
             // 关闭模式时，只更新标志，不删除已注入的对话（保持上下文连贯）
             updateConversationState(conversationId) { it.copy(nsfwModeEnabled = false) }
