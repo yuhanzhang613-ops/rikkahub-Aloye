@@ -51,13 +51,13 @@ val appModule = module {
         TTSManager(get())
     }
 
-    single {
-        Firebase.crashlytics
-    }
+    // single {
+    //     Firebase.crashlytics
+    // }
 
-    single {
-        Firebase.analytics
-    }
+    // single {
+    //     Firebase.analytics
+    // }
 
     single {
         SoundEffectPlayer(get())
