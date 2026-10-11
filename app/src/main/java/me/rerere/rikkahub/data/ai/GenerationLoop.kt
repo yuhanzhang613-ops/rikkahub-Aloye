@@ -143,6 +143,7 @@ class GenerationLoop(
                     conversationSystemPrompt = conversationSystemPrompt,
                     conversationId = conversationId,
                     workspaceCwd = workspaceCwd,
+                    conversationNsfwEnabled = conversationNsfwEnabled,
                 )
                 messages = messages.visualTransforms(
                     transformers = outputTransformers,
