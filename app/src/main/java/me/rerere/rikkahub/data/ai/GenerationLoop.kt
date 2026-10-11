@@ -342,6 +342,7 @@ class GenerationLoop(
         conversationSystemPrompt: String? = null,
         conversationId: Uuid? = null,
         workspaceCwd: String? = null,
+        conversationNsfwEnabled: Boolean = false,
     ) {
         val internalMessages = buildList {
             val system = buildString {
