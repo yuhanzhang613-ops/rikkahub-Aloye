@@ -14,11 +14,11 @@ jobs:
           FILE="app/src/main/java/me/rerere/rikkahub/ui/pages/chat/ChatPage.kt"
           
           echo "🔍 查找目标行..."
-          grep -n "previewMode = isPreviewMode," "$FILE" || echo "未找到 previewMode"
+          grep -n "previewMode = previewMode," "$FILE" || echo "未找到 previewMode"
           
           echo "📝 执行替换..."
-          # 在包含 previewMode = isPreviewMode, 的行后插入新行
-          sed -i '/previewMode = isPreviewMode,/a\                    vm = vm,' "$FILE"
+          # 在包含 previewMode = previewMode, 的行后插入新行
+          sed -i '/previewMode = previewMode,/a\                    vm = vm,' "$FILE"
           
           echo "✅ 检查修改..."
           if git diff --quiet "$FILE"; then
