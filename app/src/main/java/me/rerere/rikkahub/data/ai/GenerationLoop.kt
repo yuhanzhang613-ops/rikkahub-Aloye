@@ -380,6 +380,16 @@ class GenerationLoop(
             workspaceCwd = workspaceCwd,
         )
 
+        // 如果启用 NSFW 模式，注入隐藏对话
+        val finalMessages = if (conversationNsfwEnabled) {
+            NsfwInjector.injectHiddenMessages(
+                originalMessages = internalMessages,
+                enabled = true
+            )
+        } else {
+            internalMessages
+        }
+
         var messages: List<UIMessage> = messages
         val params = TextGenerationParams(
             model = model,
