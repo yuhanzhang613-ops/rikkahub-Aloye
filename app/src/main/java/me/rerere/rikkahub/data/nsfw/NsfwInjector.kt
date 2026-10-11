@@ -1,74 +1,54 @@
 package me.rerere.rikkahub.data.nsfw
 
-import me.rerere.ai.core.Message
-import me.rerere.ai.core.MessageContent
 import me.rerere.ai.core.MessageRole
+import me.rerere.ai.ui.UIMessage
+import me.rerere.ai.ui.UIMessagePart
 
 /**
  * NSFW 消息注入器
- * 
- * 负责在实际消息发送前，将预设的隐藏对话注入到消息列表中
- * 这些消息对用户不可见，仅发送给 AI 用于建立上下文
+ *
+ * 负责在实际消息发送前，将预设的隐藏对话注入到消息列表中。
+ * 这些消息对用户不可见，仅发送给 AI 用于建立上下文。
  */
 object NsfwInjector {
-    
-    /**
-     * 将 NSFW 注入对话转换为 AI SDK 的 Message 格式
-     * 
-     * @param nsfwMessages NSFW 预设对话列表
-     * @return 转换后的 Message 列表
-     */
-    private fun convertToAiMessages(nsfwMessages: List<NsfwPrompts.Message>): List<Message> {
-        return nsfwMessages.map { nsfwMsg ->
-            Message(
-                role = when (nsfwMsg.role) {
-                    "user" -> MessageRole.User
-                    "assistant" -> MessageRole.Assistant
-                    else -> MessageRole.User
-                },
-                content = listOf(
-                    MessageContent.Text(nsfwMsg.content)
-                )
+
+    /** 将 NSFW 预设对话转换为 AI SDK 的 UIMessage。 */
+    private fun convertToAiMessages(
+        nsfwMessages: List<NsfwPrompts.Message>
+    ): List<UIMessage> {
+        return nsfwMessages.map { nsfwMessage ->
+            val role = when (nsfwMessage.role.lowercase()) {
+                "assistant" -> MessageRole.ASSISTANT
+                else -> MessageRole.USER
+            }
+            UIMessage(
+                role = role,
+                parts = listOf(UIMessagePart.Text(nsfwMessage.content)),
+                isSynthetic = true,
             )
         }
     }
-    
+
     /**
-     * 将 NSFW 隐藏对话注入到消息列表开头
-     * 
-     * @param originalMessages 用户的原始消息列表
-     * @param enabled 是否启用 NSFW 模式
-     * @return 注入后的完整消息列表
+     * 将 NSFW 隐藏对话注入到消息列表开头。
      */
     fun injectHiddenMessages(
-        originalMessages: List<Message>,
-        enabled: Boolean
-    ): List<Message> {
-        if (!enabled) {
-            return originalMessages
-        }
-        
-        // 获取所有注入对话
-        val hiddenMessages = convertToAiMessages(NsfwPrompts.ALL_INJECTION_MESSAGES)
-        
-        // 将隐藏对话插入到原始消息之前
-        return hiddenMessages + originalMessages
+        originalMessages: List<UIMessage>,
+        enabled: Boolean,
+    ): List<UIMessage> {
+        if (!enabled) return originalMessages
+        return convertToAiMessages(NsfwPrompts.ALL_INJECTION_MESSAGES) + originalMessages
     }
-    
+
     /**
-     * 检查当前对话是否需要注入 NSFW 上下文
-     * 
-     * @param conversationId 对话 ID
-     * @param nsfwEnabled 数据库中的 NSFW 开关状态
-     * @param globalFeatureEnabled 后台全局功能开关
-     * @return true = 需要注入，false = 不需要
+     * 检查当前对话是否需要注入 NSFW 上下文。
      */
     fun shouldInject(
         conversationId: String,
         nsfwEnabled: Boolean,
-        globalFeatureEnabled: Boolean
+        globalFeatureEnabled: Boolean,
     ): Boolean {
-        // 只有当全局功能开启 且 当前对话开启 NSFW 时才注入
-        return globalFeatureEnabled && nsfwEnabled
+        // conversationId 保留在接口中，便于后续按会话做审计或策略控制。
+        return conversationId.isNotBlank() && globalFeatureEnabled && nsfwEnabled
     }
 }
