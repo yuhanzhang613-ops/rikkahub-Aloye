@@ -13,19 +13,30 @@ jobs:
         run: |
           FILE="app/src/main/java/me/rerere/rikkahub/ui/pages/chat/ChatPage.kt"
           
-          # 在 previewMode = isPreviewMode, 后面添加 vm = vm,
-          # 使用 perl 进行多行匹配和替换
-          perl -i -pe 's/(previewMode = isPreviewMode,)\n(\s+onClickMenu)/$1\n                    vm = vm,\n$2/g' "$FILE"
+          echo "🔍 查找目标行..."
+          grep -n "previewMode = isPreviewMode," "$FILE" || echo "未找到 previewMode"
           
-          # 检查是否修改成功
+          echo "📝 执行替换..."
+          # 在包含 previewMode = isPreviewMode, 的行后插入新行
+          sed -i '/previewMode = isPreviewMode,/a\                    vm = vm,' "$FILE"
+          
+          echo "✅ 检查修改..."
+          if git diff --quiet "$FILE"; then
+            echo "❌ 文件未修改，sed 可能没有匹配到目标"
+            echo "显示相关行："
+            grep -A 2 -B 2 "previewMode" "$FILE" | head -20
+            exit 1
+          fi
+          
           if grep -q "vm = vm," "$FILE"; then
             echo "✅ 修复成功！已添加 vm = vm, 参数"
             git config user.name "GitHub Actions Bot"
             git config user.email "actions@github.com"
+            git diff "$FILE"
             git add "$FILE"
             git commit -m "fix(NSFW): Auto-fix TopBar vm parameter"
             git push
           else
-            echo "❌ 修复失败，文件格式可能与预期不符"
+            echo "❌ 修复失败"
             exit 1
           fi
