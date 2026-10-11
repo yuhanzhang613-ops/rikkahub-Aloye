@@ -89,6 +89,7 @@ class GenerationLoop(
         conversationSystemPrompt: String? = null,
         conversationId: Uuid? = null,
         workspaceCwd: String? = null,
+        conversationNsfwEnabled: Boolean = false,
     ): Flow<GenerationChunk> = flow {
         val provider = model.findProvider(settings.providers) ?: error("Provider not found")
         val providerImpl = providerManager.getProviderByType(provider)
