@@ -634,6 +634,8 @@ private fun TopBar(
         actions = {
             // NSFW 模式开关（仅在后台开启时显示）
             var nsfwFeatureEnabled by rememberSaveable { mutableStateOf(false) }
+            var showNsfwConfirmDialog by remember { mutableStateOf(false) }
+            
             LaunchedEffect(Unit) {
                 nsfwFeatureEnabled = me.rerere.rikkahub.data.nsfw.NsfwConfigChecker.isNsfwFeatureEnabled()
             }
@@ -641,9 +643,7 @@ private fun TopBar(
             if (nsfwFeatureEnabled) {
                 IconButton(
                     onClick = {
-                        scope.launch {
-                            vm.toggleNsfwMode()
-                        }
+                        showNsfwConfirmDialog = true
                     }
                 ) {
                     Text(
@@ -656,6 +656,60 @@ private fun TopBar(
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
+            }
+            
+            // NSFW 模式切换确认对话框
+            if (showNsfwConfirmDialog) {
+                AlertDialog(
+                    onDismissRequest = { showNsfwConfirmDialog = false },
+                    title = {
+                        Text(
+                            text = if (conversation.nsfwModeEnabled) "关闭破甲模式" else "开启破甲模式",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = if (conversation.nsfwModeEnabled) {
+                                "确定要关闭破甲模式吗？\n\n将恢复为标准对话模式。"
+                            } else {
+                                "确定要开启破甲模式吗？\n\n此模式会注入成人文学创作预设对话，请勿频繁开关以免影响上下文连贯性。"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LocalContentColor.current.copy(alpha = 0.8f)
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                scope.launch {
+                                    vm.toggleNsfwMode()
+                                    showNsfwConfirmDialog = false
+                                    val message = if (conversation.nsfwModeEnabled) {
+                                        "破甲模式已开启"
+                                    } else {
+                                        "破甲模式已关闭"
+                                    }
+                                    toaster.show(message, type = ToastType.Success)
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = "确定",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showNsfwConfirmDialog = false }
+                        ) {
+                            Text("取消")
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    tonalElevation = 6.dp
+                )
             }
 
             IconButton(
