@@ -45,7 +45,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         MediaCreationNodeEntity::class,
         MediaCreationRecordEntity::class,
     ],
-    version = 27,
+    version = 28,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -57,10 +57,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 12, to = 13),
-        AutoMigration(from = 16, to = 17, spec = Migration_16_17::class),
-        AutoMigration(from = 17, to = 18),
-        AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20),
+        AutoMigration(from = 16, to = 17, spec = Migration_16_17::clastoMigration      AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
         AutoMigration(from = 21, to = 22),
         AutoMigration(from = 22, to = 23, spec = Migration_22_23::class),
@@ -68,6 +65,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         AutoMigration(from = 24, to = 25),
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
+        AutoMigration(from = 27, to = 28),
     ]
 )
 @TypeConverters(TokenUsageConverter::class)
