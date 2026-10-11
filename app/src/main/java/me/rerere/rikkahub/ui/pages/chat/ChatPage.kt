@@ -644,20 +644,15 @@ private fun TopBar(
                         vm.toggleNsfwMode()
                     }
                 ) {
-                    Icon(
-                        imageVector = if (conversation.nsfwModeEnabled) {
-                            // 开启时用填充图标
-                            androidx.compose.material.icons.Icons.Filled.Visibility
-                        } else {
-                            // 关闭时用描边图标
-                            androidx.compose.material.icons.Icons.Outlined.VisibilityOff
-                        },
+                    Text(
+                        text = if (conversation.nsfwModeEnabled) "●" else "○",
                         contentDescription = "NSFW Mode",
-                        tint = if (conversation.nsfwModeEnabled) {
+                        color = if (conversation.nsfwModeEnabled) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             LocalContentColor.current
-                        }
+                        },
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
             }
