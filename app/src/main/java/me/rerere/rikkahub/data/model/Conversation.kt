@@ -37,8 +37,6 @@ data class Conversation(
     val workspaceCwd: String? = null,
     // 所属文件夹（助手内分组），null 表示未归入任何文件夹
     val folderId: Uuid? = null,
-    // NSFW 模式开关
-    val nsfwModeEnabled: Boolean = false,
     @Transient
     val newConversation: Boolean = false
 ) {
