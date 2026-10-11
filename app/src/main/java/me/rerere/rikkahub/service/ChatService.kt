@@ -676,6 +676,7 @@ class ChatService(
                     assistant = assistant,
                     model = model,
                     workspaceCwd = conversation.workspaceCwd,
+                    conversationNsfwEnabled = conversation.nsfwModeEnabled,
                 )
             } catch (error: InvalidMcpServerNamesException) {
                 sessionManager.get(conversationId)?.messageQueue?.pause()
