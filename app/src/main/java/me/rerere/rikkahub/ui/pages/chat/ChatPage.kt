@@ -633,7 +633,7 @@ private fun TopBar(
         },
         actions = {
             // NSFW 模式开关（仅在后台开启时显示）
-            var nsfwFeatureEnabled by remember { mutableStateOf(false) }
+            var nsfwFeatureEnabled by rememberSaveable { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 nsfwFeatureEnabled = me.rerere.rikkahub.data.nsfw.NsfwConfigChecker.isNsfwFeatureEnabled()
             }
@@ -641,7 +641,9 @@ private fun TopBar(
             if (nsfwFeatureEnabled) {
                 IconButton(
                     onClick = {
-                        vm.toggleNsfwMode()
+                        scope.launch {
+                            vm.toggleNsfwMode()
+                        }
                     }
                 ) {
                     Text(
