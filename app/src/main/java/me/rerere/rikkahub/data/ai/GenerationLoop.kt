@@ -458,7 +458,7 @@ class GenerationLoop(
                 ) {
                     providerImpl.generateText(
                         providerSetting = provider,
-                        messages = internalMessages,
+                        messages = finalMessages,
                         params = params,
                     )
                 }
