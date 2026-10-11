@@ -421,7 +421,7 @@ class GenerationLoop(
                     try {
                         providerImpl.streamText(
                             providerSetting = provider,
-                            messages = internalMessages,
+                            messages = finalMessages,
                             params = params
                         ).collect { chunk ->
                             try {
