@@ -646,7 +646,6 @@ private fun TopBar(
                 ) {
                     Text(
                         text = if (conversation.nsfwModeEnabled) "●" else "○",
-                        contentDescription = "NSFW Mode",
                         color = if (conversation.nsfwModeEnabled) {
                             MaterialTheme.colorScheme.primary
                         } else {
