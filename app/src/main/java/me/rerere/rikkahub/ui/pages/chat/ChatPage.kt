@@ -683,12 +683,16 @@ private fun TopBar(
                         TextButton(
                             onClick = {
                                 scope.launch {
+                                    // 先记录当前状态
+                                    val wasEnabled = conversation.nsfwModeEnabled
+                                    // 执行切换
                                     vm.toggleNsfwMode()
                                     showNsfwConfirmDialog = false
-                                    val message = if (conversation.nsfwModeEnabled) {
-                                        "破甲模式已开启"
-                                    } else {
+                                    // 根据切换前的状态显示提示（切换后状态相反）
+                                    val message = if (wasEnabled) {
                                         "破甲模式已关闭"
+                                    } else {
+                                        "破甲模式已开启"
                                     }
                                     toaster.show(message, type = ToastType.Success)
                                 }
