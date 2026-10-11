@@ -272,7 +272,7 @@ class ChatVM(
         message: UIMessage,
         regenerateAssistantMsg: Boolean = true
     ) {
-        analytics.logEvent("ai_regenerate_at_message", null)
+        // analytics is intentionally disabled in this build.
         chatService.regenerateAtMessage(_conversationId, message, regenerateAssistantMsg)
     }
 
@@ -281,7 +281,7 @@ class ChatVM(
         approved: Boolean,
         reason: String = ""
     ) {
-        analytics.logEvent("ai_tool_approval", null)
+        // analytics is intentionally disabled in this build.
         chatService.handleToolApproval(_conversationId, toolCallId, approved, reason)
     }
 
@@ -289,7 +289,7 @@ class ChatVM(
         toolCallId: String,
         answer: String,
     ) {
-        analytics.logEvent("ai_tool_answer", null)
+        // analytics is intentionally disabled in this build.
         chatService.handleToolApproval(_conversationId, toolCallId, approved = true, answer = answer)
     }
 
