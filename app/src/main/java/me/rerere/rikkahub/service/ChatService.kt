@@ -1538,4 +1538,11 @@ class ChatService(
         jobs.forEach { it.join() }
         finishInterruptedPendingTools(conversationId)
     }
+
+    /**
+     * 切换对话的 NSFW 模式
+     */
+    suspend fun toggleConversationNsfwMode(conversationId: Uuid) {
+        conversationRepo.toggleConversationNsfwMode(conversationId)
+    }
 }
