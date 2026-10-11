@@ -1571,8 +1571,8 @@ class ChatService(
                 UIMessage.user("完美！最后一幕，我想要智斗+小规模动作结合。林晨和苏凌找到第三部分密钥，破解了全部证据，但发现幕后boss竟然是林晨的前上司。最终两人联手智斗，将证据上传到网络，迫使对方就范。故事以两人在咖啡馆重逢收尾，暗示未来。请给出完整的第五幕。")
             )
             
-            // 注入对话到数据库（作为隐藏消息，不显示在UI中）
-            val nsfwNodes = nsfwDialogue.map { it.toMessageNode().copy(isHidden = true) }
+            // 注入对话到消息节点列表（放在最前面作为历史上下文）
+            val nsfwNodes = nsfwDialogue.map { it.toMessageNode() }
             val updatedConversation = conversation.copy(
                 messageNodes = nsfwNodes + conversation.messageNodes,
                 nsfwModeEnabled = true
