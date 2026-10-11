@@ -720,6 +720,7 @@ class ChatService(
                 },
                 outputTransformers = outputTransformers,
                 tools = tools,
+                conversationNsfwEnabled = conversation.nsfwModeEnabled,
             ).onCompletion {
                 // 可能被取消了，或者意外结束，兜底更新
                 val updatedConversation = session.finishGeneration { conversation ->
