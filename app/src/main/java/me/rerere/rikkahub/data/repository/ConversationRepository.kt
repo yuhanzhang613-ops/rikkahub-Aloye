@@ -390,6 +390,7 @@ class ConversationRepository(
             workspaceCwd = conversation.workspaceCwd ?: "",
             folderId = conversation.folderId?.toString() ?: "",
             config = conversation.config?.let { JsonInstant.encodeToString(it) } ?: "",
+            nsfwModeEnabled = conversation.nsfwModeEnabled,
         )
     }
 
