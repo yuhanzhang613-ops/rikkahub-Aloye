@@ -321,6 +321,7 @@ private fun ChatPageContent(
                     bigScreen = bigScreen,
                     drawerState = drawerState,
                     previewMode = previewMode,
+                    vm = vm,
                     onNewChat = {
                         navigateToChatPage(navController)
                     },
@@ -412,6 +413,7 @@ private fun ChatPageContent(
                 loading = loadingJob != null,
                 processingStatus = processingStatus,
                 previewMode = previewMode,
+                    vm = vm,
                 settings = setting,
                 hazeState = hazeState,
                 errors = errors,
