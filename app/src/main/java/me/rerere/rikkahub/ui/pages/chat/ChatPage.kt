@@ -630,6 +630,37 @@ private fun TopBar(
             }
         },
         actions = {
+            // NSFW 模式开关（仅在后台开启时显示）
+            var nsfwFeatureEnabled by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                nsfwFeatureEnabled = me.rerere.rikkahub.data.nsfw.NsfwConfigChecker.isNsfwFeatureEnabled()
+            }
+            
+            if (nsfwFeatureEnabled) {
+                IconButton(
+                    onClick = {
+                        // 需要从外部传入 vm，暂时留空
+                        // vm.toggleNsfwMode()
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (conversation.nsfwModeEnabled) {
+                            // 开启时用填充图标
+                            androidx.compose.material.icons.Icons.Filled.Visibility
+                        } else {
+                            // 关闭时用描边图标
+                            androidx.compose.material.icons.Icons.Outlined.VisibilityOff
+                        },
+                        contentDescription = "NSFW Mode",
+                        tint = if (conversation.nsfwModeEnabled) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            LocalContentColor.current
+                        }
+                    )
+                }
+            }
+
             IconButton(
                 onClick = {
                     onClickMenu()
