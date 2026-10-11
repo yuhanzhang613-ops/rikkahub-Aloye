@@ -459,6 +459,21 @@ class ConversationRepository(
         )
     }
 
+    /**
+     * 切换对话的 NSFW 模式
+     * 
+     * 当从 false 切换到 true 时，下一次发送消息会自动注入隐藏对话
+     */
+    suspend fun toggleConversationNsfwMode(conversationId: Uuid) {
+        val entity = conversationDAO.getConversationById(conversationId.toString())
+            ?: return
+        
+        conversationDAO.updateNsfwMode(
+            id = conversationId.toString(),
+            nsfwModeEnabled = !entity.nsfwModeEnabled
+        )
+    }
+
     private fun conversationSummaryToConversation(entity: LightConversationEntity): Conversation {
         return Conversation(
             id = Uuid.parse(entity.id),
