@@ -639,8 +639,7 @@ private fun TopBar(
             if (nsfwFeatureEnabled) {
                 IconButton(
                     onClick = {
-                        // 需要从外部传入 vm，暂时留空
-                        // vm.toggleNsfwMode()
+                        vm.toggleNsfwMode()
                     }
                 ) {
                     Icon(
