@@ -93,6 +93,9 @@ interface ConversationDAO {
     @Query("UPDATE conversationentity SET folder_id = :folderId WHERE id = :id")
     suspend fun updateFolderId(id: String, folderId: String)
 
+    @Query("UPDATE conversationentity SET nsfw_mode_enabled = :nsfwModeEnabled WHERE id = :id")
+    suspend fun updateNsfwMode(id: String, nsfwModeEnabled: Boolean)
+
     @Query("UPDATE conversationentity SET config = :config, mode_injection_ids = :modeInjectionIds, lorebook_ids = :lorebookIds, workspace_cwd = :workspaceCwd WHERE id = :id")
     suspend fun updateConfig(
         id: String,
