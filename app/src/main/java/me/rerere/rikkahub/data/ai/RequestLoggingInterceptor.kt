@@ -105,6 +105,17 @@ class RequestLoggingInterceptor : Interceptor {
         }
     }
 
+    private fun okhttp3.Headers.toMap(): Map<String, String> {
+        return names().associateWith { name ->
+            if (name.equals("Proxy-Authorization", ignoreCase = true)) {
+                "██"
+            } else {
+                get(name) ?: ""
+            }
+        }
+    }
+}
+
         val response: Response
         var error: String? = null
 
