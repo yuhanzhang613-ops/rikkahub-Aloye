@@ -159,9 +159,9 @@ jobs:
           prerelease: true
           overwrite_files: true
           body: |
-            签名稳定版构建（commit `${{ github.sha }}`）
+            一次性签名最终版构建（commit `${{ github.sha }}`）
 
-            - 使用仓库持久签名构建
+            - 本次构建临时生成签名
             - 已通过 apksigner 签名验证
-            - 这是测试版，仅供验证使用
+            - 这是测试版，仅供最终安装使用
           files: app/build/outputs/apk/release/*.apk
