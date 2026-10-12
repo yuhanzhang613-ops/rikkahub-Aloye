@@ -4,7 +4,6 @@ on:
   # 每天 UTC 09:00、18:00 触发（北京时间 17:00、次日 02:00）
   schedule:
     - cron: '0 9,18 * * *'
-  # 也支持手动触发
   workflow_dispatch:
 
 jobs:
@@ -36,13 +35,13 @@ jobs:
     if: needs.check.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 发布 Release 需要写权限
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive # 拉取子模块
+          submodules: recursive
 
       # 与 Android Studio 自带的 JetBrains Runtime 21 保持一致
       - name: Set up JDK
@@ -51,10 +50,8 @@ jobs:
           distribution: 'jetbrains'
           java-version: '21'
         env:
-          # jetbrains 安装器通过 GitHub API 查询版本，带上 token 避免被限流
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # web 模块的 preBuild 会执行 `pnpm run build` 构建前端，必须准备好 Node + pnpm
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -67,7 +64,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: web-ui/pnpm-lock.yaml
 
-      # gradle 的 buildWebUi 任务只跑 build 不跑 install，需在此提前安装依赖
       - name: Install web-ui dependencies
         working-directory: web-ui
         run: pnpm install --frozen-lockfile
@@ -80,32 +76,97 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Prepare build files
+      - name: Prepare release signing
+        env:
+          KEY_BASE64: ${{ secrets.KEY_BASE64 }}
+          SIGNING_CONFIG: ${{ secrets.SIGNING_CONFIG }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
-          # 解码base64编码的keystore文件
-          echo "${{ secrets.KEY_BASE64 }}" | base64 -d > app/app.key
+          set -euo pipefail
 
-          # 写入签名配置到local.properties
-          echo "${{ secrets.SIGNING_CONFIG }}" > local.properties
+          if [ -z "${KEY_BASE64}" ]; then
+            echo "::error::Repository secret KEY_BASE64 is empty or missing."
+            exit 1
+          fi
+          if [ -z "${SIGNING_CONFIG}" ]; then
+            echo "::error::Repository secret SIGNING_CONFIG is empty or missing."
+            exit 1
+          fi
 
-          # 写入Google Services配置
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+          printf '%s' "${KEY_BASE64}" | base64 --decode > app/app.key
+          if [ ! -s app/app.key ]; then
+            echo "::error::Decoded keystore app/app.key is empty."
+            exit 1
+          fi
 
-      - name: Gradle Build
+          # Gradle 读取 root local.properties；强制覆盖 storeFile，避免秘密配置里的相对路径失效。
+          printf '%s\n' "${SIGNING_CONFIG}" > local.properties
+          sed -i '/^[[:space:]]*storeFile[[:space:]]*=/d' local.properties
+          printf 'storeFile=%s/app/app.key\n' "${GITHUB_WORKSPACE}" >> local.properties
+
+          for key in storePassword keyAlias keyPassword; do
+            if ! grep -q "^[[:space:]]*${key}[[:space:]]*=" local.properties; then
+              echo "::error::SIGNING_CONFIG does not contain ${key}."
+              exit 1
+            fi
+          done
+
+          # Firebase 插件当前关闭；有配置时仍写入，避免以后恢复插件时缺文件。
+          if [ -n "${GOOGLE_SERVICES_JSON}" ]; then
+            printf '%s' "${GOOGLE_SERVICES_JSON}" > app/google-services.json
+          fi
+
+          echo "Keystore prepared: $(wc -c < app/app.key) bytes"
+          echo "Release signing properties validated."
+
+      - name: Gradle Release Build
         run: |
+          set -euo pipefail
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
-      # 把 APK 直接发布为 Prerelease，用户点链接即可下载单个 apk，无需登录、无需解压
-      - name: Publish nightly prerelease
+      - name: Verify APK signatures
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "${ANDROID_HOME}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [ -z "${APKSIGNER}" ]; then
+            echo "::error::apksigner was not found in Android SDK."
+            exit 1
+          fi
+
+          apk_count=0
+          while IFS= read -r apk; do
+            apk_count=$((apk_count + 1))
+            echo "Verifying ${apk}"
+            "${APKSIGNER}" verify --verbose "${apk}"
+            sha256sum "${apk}"
+          done < <(find app/build/outputs/apk/release -type f -name '*.apk' | sort)
+
+          if [ "${apk_count}" -eq 0 ]; then
+            echo "::error::No release APK was produced."
+            exit 1
+          fi
+
+      - name: Upload signed APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stable-${{ github.sha }}
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 14
+
+      # 使用独立 stable tag，避免用户继续下载旧 nightly Debug APK。
+      - name: Publish stable prerelease
         uses: softprops/action-gh-release@v2
         if: success()
         with:
-          tag_name: nightly            # 固定 tag，每晚覆盖同一个「最新每日构建」
-          name: Nightly Build
+          tag_name: stable
+          name: Stable Build
           prerelease: true
+          overwrite_files: true
           body: |
-            自动每日构建（commit `${{ github.sha }}`）
+            签名稳定版构建（commit `${{ github.sha }}`）
 
-            > ⚠️ 开发版本，可能不稳定，仅供测试。
-          files: app/build/outputs/apk/debug/*.apk
+            - 使用仓库持久签名构建
+            - 已通过 apksigner 签名验证
+            - 这是测试版，仅供验证使用
+          files: app/build/outputs/apk/release/*.apk
